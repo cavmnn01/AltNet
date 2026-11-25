@@ -1,0 +1,45 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks: [internal]          # sin puertos publicados al host
+
+  backend:
+    build: .
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      SEED_TECH_USER: ${SEED_TECH_USER}
+      SEED_TECH_PASSWORD: ${SEED_TECH_PASSWORD}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [internal]          # solo accesible vía nginx
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on: [backend]
+    ports:
+      - "8080:80"                 # en producción: poner TLS delante (Caddy/Cloudflare)
+    networks: [internal]
+
+volumes:
+  pgdata:
+networks:
+  internal:
