@@ -59,6 +59,10 @@ docker compose down
 
 Envíe el token en `Authorization: Bearer <token>`. Para probar, los seriales `HWTC1A2B3C4D` y `HWTC0F0F0F0F` simulan respectivamente una señal aceptable y una señal débil.
 
+El contrato OpenAPI 3.1 está disponible en [`docs/openapi.json`](./docs/openapi.json) y se sirve desde `http://localhost:8080/api/openapi.json`.
+
+La trazabilidad de cambios, verificaciones y pendientes del proyecto se registra en [`docs/bitacora.md`](./docs/bitacora.md).
+
 ## Pruebas
 
 Desde la raíz del proyecto:

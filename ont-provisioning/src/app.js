@@ -25,6 +25,9 @@ export function createApp({ authenticationService, provisioningService }) {
   app.use(express.json({ limit: '10kb' }));
 
   app.get('/api/health', (_req, res) => res.json({ ok: true }));
+  app.get('/api/openapi.json', (_req, res) => {
+    res.sendFile(new URL('../docs/openapi.json', import.meta.url));
+  });
   app.use('/api/auth', createAuthRoutes(authenticationService));
   app.use('/api/provisioning', createProvisioningRoutes(provisioningService));
 

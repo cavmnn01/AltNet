@@ -1,0 +1,640 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ONT Provisioning API",
+    "description": "API para autenticacion de tecnicos y aprovisionamiento de ONTs GPON.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/",
+      "description": "Servidor actual"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Health"
+    },
+    {
+      "name": "Authentication"
+    },
+    {
+      "name": "Provisioning"
+    }
+  ],
+  "paths": {
+    "/api/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Comprobar el estado del servicio",
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "description": "Servicio disponible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                },
+                "example": {
+                  "ok": true
+                }
+              }
+            }
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Iniciar sesion",
+        "operationId": "login",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Inicio de sesion exitoso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          }
+        }
+      }
+    },
+    "/api/provisioning/service-profiles": {
+      "get": {
+        "tags": [
+          "Provisioning"
+        ],
+        "summary": "Listar perfiles de servicio activos",
+        "operationId": "listServiceProfiles",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Perfiles disponibles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ServiceProfile"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          }
+        }
+      }
+    },
+    "/api/provisioning/discover": {
+      "post": {
+        "tags": [
+          "Provisioning"
+        ],
+        "summary": "Descubrir una ONT y consultar su potencia",
+        "operationId": "discoverOnt",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DiscoverRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ONT encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiscoverResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          }
+        }
+      }
+    },
+    "/api/provisioning/authorize": {
+      "post": {
+        "tags": [
+          "Provisioning"
+        ],
+        "summary": "Aprovisionar una ONT",
+        "operationId": "authorizeOnt",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthorizeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ONT aprovisionada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthorizeResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationErrorOrInvalidProfile"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "HealthResponse": {
+        "type": "object",
+        "required": [
+          "ok"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "username": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 50,
+            "pattern": "^[a-zA-Z0-9_.-]+$"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 128,
+            "writeOnly": true
+          }
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "required": [
+          "token",
+          "technician"
+        ],
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "technician": {
+            "$ref": "#/components/schemas/Technician"
+          }
+        }
+      },
+      "Technician": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "role"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "name": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "technician",
+              "admin"
+            ]
+          }
+        }
+      },
+      "ServiceProfile": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "vlan",
+          "downMbps",
+          "upMbps",
+          "oltProfileName",
+          "active"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "name": {
+            "type": "string"
+          },
+          "vlan": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "downMbps": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "upMbps": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "oltProfileName": {
+            "type": "string"
+          },
+          "active": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Serial": {
+        "type": "string",
+        "minLength": 8,
+        "maxLength": 40,
+        "pattern": "^([0-9A-F]{16}|[A-Z]{4}[0-9A-F]{8}|[0-9A-F]{12})$",
+        "description": "Serial normalizado. El formato HWTCxxxxxxxx se convierte en el formato 48575443xxxxxxxx."
+      },
+      "DiscoverRequest": {
+        "type": "object",
+        "required": [
+          "serial"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "serial": {
+            "$ref": "#/components/schemas/Serial"
+          }
+        }
+      },
+      "DiscoverResponse": {
+        "type": "object",
+        "required": [
+          "serial",
+          "model",
+          "port",
+          "rxPowerDbm",
+          "txPowerDbm",
+          "alreadyProvisioned",
+          "minRxDbm",
+          "signalOk"
+        ],
+        "properties": {
+          "serial": {
+            "$ref": "#/components/schemas/Serial"
+          },
+          "model": {
+            "type": "string"
+          },
+          "port": {
+            "type": "string",
+            "pattern": "^\\d+/\\d+/\\d+$"
+          },
+          "rxPowerDbm": {
+            "type": "number"
+          },
+          "txPowerDbm": {
+            "type": "number"
+          },
+          "alreadyProvisioned": {
+            "type": "boolean"
+          },
+          "minRxDbm": {
+            "type": "number",
+            "const": -25
+          },
+          "signalOk": {
+            "type": "boolean"
+          }
+        }
+      },
+      "AuthorizeRequest": {
+        "type": "object",
+        "required": [
+          "serial",
+          "serviceProfileId"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "serial": {
+            "$ref": "#/components/schemas/Serial"
+          },
+          "serviceProfileId": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "workOrderId": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "AuthorizeResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "message",
+          "rxPowerDbm",
+          "txPowerDbm"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": true
+          },
+          "message": {
+            "type": "string"
+          },
+          "rxPowerDbm": {
+            "type": "number"
+          },
+          "txPowerDbm": {
+            "type": "number"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        }
+      },
+      "ValidationError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Error"
+          },
+          {
+            "type": "object",
+            "required": [
+              "details"
+            ],
+            "properties": {
+              "details": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "path",
+                    "message"
+                  ],
+                  "properties": {
+                    "path": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "RxPowerError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Error"
+          },
+          {
+            "type": "object",
+            "required": [
+              "rxPowerDbm"
+            ],
+            "properties": {
+              "rxPowerDbm": {
+                "type": "number"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Token ausente, invalido o expirado",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "El usuario no tiene permisos",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "ValidationError": {
+        "description": "Datos de entrada invalidos",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ValidationError"
+            }
+          }
+        }
+      },
+      "ValidationErrorOrInvalidProfile": {
+        "description": "Datos invalidos o perfil de servicio inexistente/inactivo",
+        "content": {
+          "application/json": {
+            "schema": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/ValidationError"
+                },
+                {
+                  "$ref": "#/components/schemas/Error"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "ONT no encontrada",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Conflict": {
+        "description": "La ONT ya fue aprovisionada",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "UnprocessableEntity": {
+        "description": "La potencia Rx esta fuera del rango permitido",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/RxPowerError"
+            }
+          }
+        }
+      },
+      "BadGateway": {
+        "description": "La OLT no pudo completar el aprovisionamiento",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "TooManyRequests": {
+        "description": "Limite de solicitudes excedido",
+        "headers": {
+          "RateLimit": {
+            "description": "Informacion del limite",
+            "schema": {
+              "type": "string"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    }
+  }
+}
